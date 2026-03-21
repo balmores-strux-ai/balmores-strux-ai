@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BALMORES STRUX AI</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">⬡</span>
+      <div>
+        <h1>BALMORES STRUX AI</h1>
+        <p class="tagline">Chat in → 3D frame + FEM + ETABS-oriented export</p>
+      </div>
+    </div>
+    <div class="topbar-controls">
+      <label class="field-inline">
+        <span>Code</span>
+        <select id="buildingCode" title="Drift check basis: height / denominator">
+          <option value="US">US (H/400)</option>
+          <option value="CANADA">Canada (H/500)</option>
+          <option value="PHILIPPINES">Philippines (H/400)</option>
+        </select>
+      </label>
+      <label class="field-inline">
+        <span>f'c MPa</span>
+        <input type="number" id="fcMPa" placeholder="30" step="0.1" />
+      </label>
+      <label class="field-inline">
+        <span>fy MPa</span>
+        <input type="number" id="fyMPa" placeholder="420" step="0.1" />
+      </label>
+      <label class="field-inline">
+        <span>SBC kPa</span>
+        <input type="number" id="sbcKPa" placeholder="250" step="1" />
+      </label>
+      <span id="brainStatus" class="brain-pill" title="Neural model status — optional">…</span>
+    </div>
+  </header>
+
+  <details class="engineer-guide">
+    <summary>How to use this (structural engineers — click to expand)</summary>
+    <div class="guide-body">
+      <p><strong>What you get.</strong> A 3D steel frame, a linear elastic FEM solve, drift check vs the code you pick (height ÷ 400 or 500), grouped suggested sections, graphs, and an ETABS-style text snapshot for manual model entry.</p>
+      <p><strong>3D colors.</strong> After analysis, members shade from green to red by |M|max in that member (not a code check — a quick demand map).</p>
+      <p><strong>Your trained model later.</strong> Save your PyTorch file as <code>models/strux_etabs_brain.pt</code> or set <code>BALMORES_BRAIN_PT</code>. Copy <code>models/brain_config.example.json</code> to <code>brain_config.json</code> and set <code>input_dim</code> to match your 5000-sample network.</p>
+      <p><strong>PE of record.</strong> This is a screening / assistant tool — verify load combinations, connections, and foundations in ETABS or equivalent.</p>
+    </div>
+  </details>
+
+  <div class="layout">
+    <section class="chat-panel">
+      <div id="chatThread" class="chat-thread" aria-live="polite"></div>
+      <div class="typing" id="typing" hidden>Working…</div>
+      <div class="composer-bar">
+        <textarea id="messageInput" rows="3" placeholder="Describe the building like ChatGPT: bays in X and Y, height/stories, STAAD-style coordinates if you have them, loads, fc / fy / SBC in text — then press Build &amp; Analyze."></textarea>
+        <div class="composer-actions">
+          <button type="button" class="primary" id="btnBuild">Build &amp; Analyze</button>
+          <button type="button" class="ghost" id="btnAsk">Ask (follow-up)</button>
+          <button type="button" class="ghost" id="btnSample">Sample</button>
+          <button type="button" class="ghost" id="btnUndo">Undo</button>
+        </div>
+        <p class="hint">Follow-up: click Ask or press Ctrl+Enter. Build &amp; Analyze (or Enter) regenerates the frame, runs FEM, updates graphs, and fills the report tabs.</p>
+      </div>
+    </section>
+
+    <section class="output-panel">
+      <div class="output-head">
+        <div>
+          <h2>Live output</h2>
+          <p id="statusLine" class="status-line">Ready.</p>
+        </div>
+        <button type="button" class="ghost" id="btnDownloadPack" title="Geometry, loads, FEM, report, ETABS text">Download JSON pack</button>
+      </div>
+
+      <div class="model-strip">
+        <div class="strip-card">
+          <h3>Model</h3>
+          <pre id="modelCard">Loading…</pre>
+        </div>
+        <div class="strip-card">
+          <h3>Checks</h3>
+          <pre id="resultCard">No analysis yet.</pre>
+        </div>
+      </div>
+
+      <div class="viewer-box">
+        <div id="plot3d" class="plot3d"></div>
+      </div>
+
+      <div class="tabs-wrap">
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab active" data-tab="summary">Summary</button>
+          <button type="button" class="tab" data-tab="analysis">Internal forces</button>
+          <button type="button" class="tab" data-tab="design">Designed vs analysis</button>
+          <button type="button" class="tab" data-tab="graphs">Graphs</button>
+          <button type="button" class="tab" data-tab="etabs">ETABS model</button>
+        </div>
+        <div class="tab-panels">
+          <div class="tab-panel active" id="panel-summary">
+            <pre id="textSummary" class="report-pre"></pre>
+          </div>
+          <div class="tab-panel" id="panel-analysis">
+            <pre id="textAnalysis" class="report-pre"></pre>
+          </div>
+          <div class="tab-panel" id="panel-design">
+            <pre id="textDesign" class="report-pre"></pre>
+            <pre id="textRec" class="report-pre sub"></pre>
+          </div>
+          <div class="tab-panel" id="panel-graphs">
+            <div class="charts-grid">
+              <div id="chartLevels" class="chart-cell"></div>
+              <div id="chartBeams" class="chart-cell"></div>
+              <div id="chartCols" class="chart-cell"></div>
+              <div id="chartReact" class="chart-cell"></div>
+            </div>
+          </div>
+          <div class="tab-panel" id="panel-etabs">
+            <p class="etabs-note">Plain-text snapshot for manual ETABS entry (not a binary .edb). Use Copy or download JSON from the server state if needed.</p>
+            <pre id="etabsExport" class="report-pre etabs-pre"></pre>
+            <button type="button" class="ghost" id="btnCopyEtabs">Copy ETABS text</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

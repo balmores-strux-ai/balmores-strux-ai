@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-03-21 14:42:41",
+  "rows_total": 3100,
+  "current_sample_id": 3318,
+  "new_rows_added_this_run": 80,
+  "elapsed_hours": 1.7553,
+  "note": "checkpoint",
+  "parquet_message": "Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\nA suitable version of pyarrow or fastparquet is required for parquet support.\nTrying to import the above resulted in these errors:\n - Missing optional dependency 'pyarrow'. pyarrow is required for parquet support. Use pip or conda to install pyarrow.\n - Missing optional dependency 'fastparquet'. fastparquet is required for parquet support. Use pip or conda to install fastparquet."
+}

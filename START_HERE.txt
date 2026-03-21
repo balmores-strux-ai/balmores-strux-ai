@@ -1,0 +1,50 @@
+BALMORES STRUX AI — Quick start (for structural engineers)
+
+1) Install Python 3.10+ from python.org (check "Add Python to PATH" on Windows).
+
+2) Open a terminal in this folder and run:
+   pip install -r requirements.txt
+
+3) Create a file named .env in this folder (copy from .env.example) and paste your OpenAI API key:
+   OPENAI_API_KEY=sk-...
+
+4) Start the app:
+   Double-click run.bat
+   OR in terminal: uvicorn app:app --host 127.0.0.1 --port 8000
+
+5) In your browser open: http://127.0.0.1:8000
+
+How to use the screen
+- Pick building code and type fc, fy, SBC if you want them on the report.
+- Describe the building in plain English, then click "Build & Analyze".
+- The 3D view turns GREEN→RED on members after analysis (hotter = higher |M|max in that member).
+- Use tabs: Summary, Internal forces, Designed vs analysis, Graphs, ETABS model.
+- "Ask (follow-up)" or Ctrl+Enter = chat about the same project without rebuilding.
+
+Your neural model (later)
+- Put your trained file as: models/strux_etabs_brain.pt
+  OR set environment variable BALMORES_BRAIN_PT to the full path of your .pt file.
+- Optional: copy models/brain_config.example.json to models/brain_config.json
+  and set input_dim / output_dim to match your network from VS Code training.
+
+Export
+- ETABS tab: copy text for manual ETABS entry.
+- "Download pack" saves JSON (geometry + loads + FEM results) for your records or scripts.
+
+Disclaimer
+- This tool runs a linear elastic frame idealization. Final code checks, load combinations,
+  stability, connections, and foundations must be verified in ETABS (or equivalent) by a PE.
+
+GitHub + Render (deploy online)
+1) Install Git from https://git-scm.com/download/win (or use GitHub Desktop).
+2) Create a new empty repository on https://github.com (no README needed).
+3) In this folder, open PowerShell or Git Bash and run:
+   git init
+   git add .
+   git commit -m "BALMORES STRUX AI"
+   git branch -M main
+   git remote add origin https://github.com/YOUR_USER/YOUR_REPO.git
+   git push -u origin main
+   (Use YOUR_USER/YOUR_REPO from GitHub; sign in when asked.)
+4) On https://render.com → New → Blueprint → pick this repo → deploy using render.yaml.
+5) In Render → Environment, add OPENAI_API_KEY (required). Optional: OPENAI_MODEL, BALMORES_BRAIN_PT.

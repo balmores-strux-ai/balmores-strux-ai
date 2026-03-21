@@ -1,0 +1,27 @@
+# Environment & secrets
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Trained weights (large — use BALMORES_BRAIN_PT on Render or Git LFS if you must commit)
+*.pt
+*.pth
+*.onnx

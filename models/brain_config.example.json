@@ -1,0 +1,17 @@
+{
+  "comment": "Copy to brain_config.json and edit when you plug in a new trained .pt from VS Code / PyTorch.",
+  "input_dim": 24,
+  "hidden_dim": 64,
+  "output_dim": 5,
+  "recommendation_labels": [
+    "Drift/stiffness looks acceptable for the chosen drift basis; verify load combinations in ETABS.",
+    "Drift or deflection is relatively high; consider increasing member sizes or bracing.",
+    "Internal forces show a few governing members; align ETABS design groups with the reported FEM groups.",
+    "Reactions are non-trivial; confirm support modeling (fixity) matches construction.",
+    "Run ETABS with the exported geometry and compare periods/base reactions to this linear snapshot."
+  ],
+  "feature_notes": [
+    "Default app vector (first 24 floats): roof_disp_mm, drift_limit_mm, drift_ratio, height_m, n_members, n_beams, n_columns, max_moment_kNm, mean_moment_kNm, max_shear_kN, max_axial_kN, drift_pass_flag, n_beam_groups, n_column_groups, then zeros padded to input_dim.",
+    "For your 5000-sample model: set input_dim to match your training tensor, then either retrain with this ordering or map features in your own export script."
+  ]
+}
