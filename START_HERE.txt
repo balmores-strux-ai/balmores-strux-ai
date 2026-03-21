@@ -36,15 +36,12 @@ Disclaimer
   stability, connections, and foundations must be verified in ETABS (or equivalent) by a PE.
 
 GitHub + Render (deploy online)
-1) Install Git from https://git-scm.com/download/win (or use GitHub Desktop).
-2) Create a new empty repository on https://github.com (no README needed).
-3) In this folder, open PowerShell or Git Bash and run:
-   git init
-   git add .
-   git commit -m "BALMORES STRUX AI"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USER/YOUR_REPO.git
-   git push -u origin main
-   (Use YOUR_USER/YOUR_REPO from GitHub; sign in when asked.)
-4) On https://render.com → New → Blueprint → pick this repo → deploy using render.yaml.
-5) In Render → Environment, add OPENAI_API_KEY (required). Optional: OPENAI_MODEL, BALMORES_BRAIN_PT.
+1) Git + GitHub CLI: if missing, run in PowerShell (Admin optional):
+   winget install Git.Git GitHub.cli --accept-source-agreements --accept-package-agreements
+2) Open PowerShell IN THIS FOLDER and run (login once in the browser):
+   gh auth login
+   .\scripts\auto-push-to-github.ps1
+   This creates repo "balmores-strux-ai" on your GitHub and pushes main (or use another name: .\scripts\auto-push-to-github.ps1 MY-REPO-NAME).
+   No browser? Set GH_TOKEN to a classic PAT with "repo" scope, or put the PAT in gh_token.txt (one line), run the script, delete the file.
+3) On https://render.com → New → Blueprint → pick this repo → deploy using render.yaml.
+4) In Render → Environment, add OPENAI_API_KEY (required). Optional: OPENAI_MODEL, BALMORES_BRAIN_PT.
